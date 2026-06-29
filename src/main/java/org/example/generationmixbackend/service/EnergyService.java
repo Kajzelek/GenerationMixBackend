@@ -24,9 +24,15 @@ public class EnergyService {
     }
 
     public List<DailyMixResponse> getThreeDayPrediction(){
+
         LocalDate today = LocalDate.now(ZoneOffset.UTC);
+        LocalDate tomorrow = today.plusDays(1);
+        LocalDate dayAfterTomorrow = today.plusDays(2);
+
+        Set<LocalDate> targetDates = Set.of(today, tomorrow, dayAfterTomorrow);
+
         ZonedDateTime from = today.atStartOfDay(ZoneOffset.UTC);
-        ZonedDateTime to = today.plusDays(2).atTime(23, 59, 59).atZone(ZoneOffset.UTC);
+        ZonedDateTime to = dayAfterTomorrow.atTime(23, 30, 0).atZone(ZoneOffset.UTC);
 
         CarbonIntensityResponse response = carbonIntensityClient.getCarbonIntensity(from, to);
             if(response == null || response.data() == null){
@@ -34,6 +40,7 @@ public class EnergyService {
             }
 
         Map<LocalDate, List<GenerationData>> dataByDate = response.data().stream()
+                .filter(d -> targetDates.contains(d.from().toLocalDate()))
                 .collect(Collectors.groupingBy(d -> d.from().toLocalDate()));
 
         List<DailyMixResponse> result = new ArrayList<>();
