@@ -1,12 +1,10 @@
 package org.example.generationmixbackend.controller;
 
 import org.example.generationmixbackend.dto.DailyMixResponse;
+import org.example.generationmixbackend.dto.OptimalWindowResponse;
 import org.example.generationmixbackend.service.EnergyService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -24,5 +22,18 @@ public class EnergyController {
     @GetMapping("/daily-mix")
     public ResponseEntity<List<DailyMixResponse>> getDailyMix() {
         return ResponseEntity.ok(energyService.getThreeDayPrediction());
+    }
+
+    @GetMapping("/optimal-window")
+    public ResponseEntity<OptimalWindowResponse> getOptimalWindow(@RequestParam int hours) {
+        try {
+            OptimalWindowResponse response = energyService.getOptimalWindow(hours);
+            if (response == null) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }
